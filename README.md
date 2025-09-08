@@ -1,4 +1,4 @@
-# Hands-on Demo: Designing a REST Endpoint
+# Hands-on Demo: RESTful API with Ruby and Sinatra
 Based on [Building RESTful APIs with Ruby — A Quick Start Guide](https://medium.com/@AlexanderObregon/building-restful-apis-with-ruby-d5ac54be12e4)
 
 ## Create a new directory for your project and navigate to it:
@@ -51,14 +51,7 @@ end
 ## Create a Task model to interact with the database:
 ```ruby
 class Task < Sequel::Model
-  def to_json(state = nil, *)
-    JSON::State.from_state(state).generate({
-      id: id,
-      title: title,
-      description: description,
-      completed: completed
-    })
-  end
+  plugin :json_serializer
 end
 ```
 
@@ -68,7 +61,7 @@ end
 ```ruby
 get '/tasks' do
   tasks = Task.all
-  JSON.generate tasks
+  json tasks
 end
 ```
 
@@ -77,7 +70,7 @@ end
 post '/tasks' do
   data = JSON.parse(request.body.read)
   task = Task.create(title: data['title'], description: data['description'])
-  JSON.generate task
+  json task
 end
 ```
 
@@ -85,7 +78,7 @@ end
 ```ruby
 get '/tasks/:id' do |id|
   task = Task[id]
-  JSON.generate task
+  json task
 end
 ```
 
@@ -97,12 +90,13 @@ put '/tasks/:id' do |id|
   # only update if exists
   if task
     # keep values of un-updated attributes
-    data['title'] ||= task.title
-    data['description'] ||= task.description
-    data['completed'] ||= task.completed
-    task.update(title: data['title'], description: data['description'], completed: data['completed'])
+    task.update(
+      title: data['title'] || task.title,
+      description: data['description'] || task.description,
+      completed: data['completed'] || task.completed
+    )
   end
-  JSON.generate task
+  json task
 end
 ```
 
@@ -114,7 +108,7 @@ delete '/tasks/:id' do |id|
   if task
     task.delete
   end
-  JSON.generate task
+  json task
 end
 ```
 

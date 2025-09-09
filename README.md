@@ -85,10 +85,10 @@ end
 ### Update an existing task (PUT)
 ```ruby
 put '/tasks/:id' do |id|
-  data = JSON.parse(request.body.read)
   task = Task[id]
   # only update if exists
   if task
+    data = JSON.parse(request.body.read)
     # keep values of un-updated attributes
     task.update(
       title: data['title'] || task.title,
